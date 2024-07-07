@@ -75,6 +75,7 @@ dependencies = [
 [[package]]
 name = "ark-circom"
 version = "0.1.0"
+source = "git+https://github.com/l-adic/circom-compat.git?rev=3299bfc#3299bfc72f689ac96ddb17f9d3490179ef38a618"
 dependencies = [
  "ark-bn254",
  "ark-crypto-primitives",

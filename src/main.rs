@@ -71,3 +71,19 @@ fn create_wasm_instance(store: &mut Store, circuit_dir: PathBuf) -> Result<Wasm>
     let wasm = Wasm::new(exports, memory);
     Ok(wasm)
 }
+
+#[cfg(test)]
+mod tests {
+    use num_traits::FromPrimitive;
+    use num_bigint::BigInt;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test_verify_witness() {
+      let wtns = generate_witness().unwrap();
+      // test that the circuit evaluates to true
+      assert_eq!(wtns[1], BigInt::from_u8(1).unwrap())
+
+    }
+}
