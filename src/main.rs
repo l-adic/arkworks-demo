@@ -9,11 +9,12 @@ use wasmer_wasix::{generate_import_object_from_env, WasiEnv, WasiVersion};
 
 #[tokio::main]
 async fn main() {
-    let wtns = run_example().unwrap();
+    let wtns = generate_witness().unwrap();
     print!("witness {:?}", wtns);
 }
 
-fn run_example() -> Result<Vec<BigInt>> {
+// generate the witness given the input
+fn generate_witness() -> Result<Vec<BigInt>> {
     let mut store = Store::default();
     let wasm = create_wasm_instance(&mut store, PathBuf::from("./circuit-assets"))?;
     let inputs = parse_inputs("./inputs.json");
@@ -21,6 +22,7 @@ fn run_example() -> Result<Vec<BigInt>> {
     wc.calculate_witness(&mut store, inputs, false)
 }
 
+// parse json inputs where the values are either hex encoded int or an array of such
 fn parse_inputs(inputs_path: impl AsRef<std::path::Path>) -> HashMap<String, Vec<BigInt>> {
     let inputs_str = std::fs::read_to_string(inputs_path).unwrap();
     let inputs: std::collections::HashMap<String, serde_json::Value> =
@@ -31,7 +33,7 @@ fn parse_inputs(inputs_path: impl AsRef<std::path::Path>) -> HashMap<String, Vec
             Value::String(inner) => {
                 BigInt::from_str_radix(&inner.strip_prefix("0x").unwrap(), 16).unwrap()
             }
-            _ => panic!("unsupported type, requires hex encoded string"),
+            _ => panic!("unsupported type, requires hex encoded int"),
         }
     }
 
@@ -51,6 +53,7 @@ fn parse_inputs(inputs_path: impl AsRef<std::path::Path>) -> HashMap<String, Vec
         .collect::<HashMap<_, _>>()
 }
 
+// Create a wasm instance that loads the witness solver binary and has access to the circuit.bin file
 fn create_wasm_instance(store: &mut Store, circuit_dir: PathBuf) -> Result<Wasm> {
     let module = Module::from_file(&store, circuit_dir.clone().join("circuit.wasm"))?;
     let host_fs = wasmer_wasix::virtual_fs::host_fs::FileSystem::default();
